@@ -7,25 +7,32 @@ export function useBookings() {
   const [searchParams] = useSearchParams();
   const filterValue = searchParams.get("status");
 
-  // Filter
+  // 1.) FILTER
   const filter =
-    !filterValue || filterValue === "null"
+    !filterValue || filterValue === "all"
       ? null
       : { field: "status", value: filterValue };
+  // { field: "totalPrice", value: 5000, method: "gte" };
 
-  // SortBy
+  // 2.) SORT
   const sortByValue = searchParams.get("sortBy") || "startDate-desc";
   const [field, direction] = sortByValue.split("-");
   const sortBy = { field, direction };
 
+  // 3.) PAGINATION
+  const page = !searchParams.get("page") ? 1 : Number(searchParams.get("page"));
+
   const {
     isLoading,
-    data: bookings,
+    data: data,
     error,
   } = useQuery({
-    queryKey: ["bookings", filter, sortBy],
-    queryFn: () => getBookings(filter, sortBy),
+    queryKey: ["bookings", filter, sortBy, page],
+    queryFn: () => getBookings({ filter, sortBy, page }),
   });
 
-  return { isLoading, error, bookings };
+  const bookings = data?.data || [];
+  const count = data?.count || 0;
+
+  return { isLoading, error, bookings, count };
 }
