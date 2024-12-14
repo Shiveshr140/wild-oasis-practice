@@ -6,6 +6,11 @@ import Table from "../../ui/Table";
 
 import { formatCurrency } from "../../utils/helpers";
 import { formatDistanceFromNow } from "../../utils/helpers";
+import Menus from "../../ui/Menus";
+import { useNavigate } from "react-router-dom";
+import { HiArrowUpOnSquare, HiEye } from "react-icons/hi2";
+import { HiArrowDown } from "react-icons/hi";
+import useCheckout from "../check-in-out/useCheckout";
 
 const Cabin = styled.div`
   font-size: 1.6rem;
@@ -34,6 +39,61 @@ const Amount = styled.div`
   font-weight: 500;
 `;
 
+// function BookingRow({
+//   booking: {
+//     id: bookingId,
+//     created_at,
+//     startDate,
+//     endDate,
+//     numNights,
+//     numGuests,
+//     totalPrice,
+//     status,
+//     guests: { fullName: guestName, email },
+//     cabins: { name: cabinName },
+//   },
+// }) {
+
+//   const statusToTagName = {
+//     unconfirmed: "blue",
+//     "checked-in": "green",
+//     "checked-out": "silver",
+//   };
+
+//   return (
+//     <Table.Row>
+//       <Cabin>{cabinName}</Cabin>
+
+//       <Stacked>
+//         <span>{guestName}</span>
+//         <span>{email}</span>
+//       </Stacked>
+
+//       <Stacked>
+//         <span>
+//           {isToday(new Date(startDate))
+//             ? "Today"
+//             : formatDistanceFromNow(startDate)}{" "}
+//           &rarr; {numNights} night stay
+//         </span>
+//         <span>
+//           {format(new Date(startDate), "MMM dd yyyy")} &mdash;{" "}
+//           {format(new Date(endDate), "MMM dd yyyy")}
+//         </span>
+//       </Stacked>
+
+//       <Tag type={statusToTagName[status]}>{status.replace("-", " ")}</Tag>
+
+//       <Amount>{formatCurrency(totalPrice)}</Amount>
+
+//     </Table.Row>
+//   );
+// }
+
+// export default BookingRow;
+
+////************ Single Booking Page
+
 function BookingRow({
   booking: {
     id: bookingId,
@@ -48,6 +108,8 @@ function BookingRow({
     cabins: { name: cabinName },
   },
 }) {
+  const navigate = useNavigate();
+  const { checkout, isCheckingOut } = useCheckout();
   const statusToTagName = {
     unconfirmed: "blue",
     "checked-in": "green",
@@ -79,6 +141,34 @@ function BookingRow({
       <Tag type={statusToTagName[status]}>{status.replace("-", " ")}</Tag>
 
       <Amount>{formatCurrency(totalPrice)}</Amount>
+      <Menus.Menu>
+        <Menus.Toggle id={bookingId} />
+        <Menus.List id={bookingId}>
+          <Menus.Button
+            icon={<HiEye />}
+            onClick={() => navigate(`/bookings/${bookingId}`)}
+          >
+            See Details
+          </Menus.Button>
+          {status === "unconfirmed" && (
+            <Menus.Button
+              onClick={() => navigate(`/checkin/${bookingId}`)}
+              icon={<HiArrowDown />}
+            >
+              Check in
+            </Menus.Button>
+          )}
+          {status === "checked-in" && (
+            <Menus.Button
+              icon={<HiArrowUpOnSquare />}
+              onClick={() => checkout(bookingId)}
+              disabled={isCheckingOut}
+            >
+              Check out
+            </Menus.Button>
+          )}
+        </Menus.List>
+      </Menus.Menu>
     </Table.Row>
   );
 }
